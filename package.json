@@ -1,5 +1,5 @@
 {
-  "name": "start-template",
+  "name": "start-template-nodejs",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -22,6 +22,6 @@
     "start": "nodemon ./dist/index.js",
     "debug": "nodemon --inspect ./dist/index.js",
     "watch": "tsc -w",
-    "test": "jest --watchAll --no-cache --detectOpenHandles --forceExit"
+    "test": "jest --no-cache --detectOpenHandles"
   }
 }
