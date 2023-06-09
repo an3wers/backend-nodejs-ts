@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { HTTPS_STATUSES } from "../helpers/httpStatuses";
-
 import { UserViewModel } from "../models/UserViewModel";
 import {
   RequestWithBody,
@@ -10,16 +9,20 @@ import {
 } from "../types";
 
 import { UserQueryModel } from "../models/GetUsersQueryModel";
-
 import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
-
 import { getUserForView } from "../helpers/getUserForView";
-
 import { DBType } from "../db/db";
+import UserRepository from "../repositories/user.repository";
 
+/*
+  Слой представления (Representation)
+*/
+
+// TODO Убрать db из передаваемого параметра
 export const getUsersRoutes = (db: DBType) => {
   const router = express.Router();
+  const userRepository = new UserRepository();
 
   router.get(
     "/",
@@ -27,31 +30,24 @@ export const getUsersRoutes = (db: DBType) => {
       req: RequestWithQuery<UserQueryModel>,
       res: Response<UserViewModel[]>
     ) {
-      let users = db.users;
-      if (req.query.name) {
-        users = db.users.filter(
-          (item) => item.name.indexOf(req.query.name) > -1
-        );
-      }
-      res.json(
-        users.map((user) => {
-          return getUserForView(user);
-        })
-      );
+      const view = userRepository.findUsers(req.query?.name).map((user) => {
+        return getUserForView(user);
+      });
+      res.json(view);
     }
   );
 
-  // Get user by id
   router.get(
     "/:id",
     (req: Request<{ id: string }>, res: Response<UserViewModel>) => {
-      const foundUser = db.users.find((item) => item.id === +req.params.id);
+      const foundUser = userRepository.getUser(+req.params.id);
 
       if (!foundUser) {
         res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
         return;
       }
-      res.json(getUserForView(foundUser));
+      const view = getUserForView(foundUser);
+      res.json(view);
     }
   );
 
@@ -63,17 +59,16 @@ export const getUsersRoutes = (db: DBType) => {
         res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
         return;
       }
-      const newUser = {
-        id: +new Date(),
+
+      const newUser = userRepository.createUser({
         name: req.body.name,
         age: req.body.age,
-      };
-      db.users.push(newUser);
+      });
+
       res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(newUser));
     }
   );
 
-  // Delete user by id
   router.delete(
     "/:id",
     (req: RequestWithParams<{ id: string }>, res: Response) => {
@@ -81,8 +76,12 @@ export const getUsersRoutes = (db: DBType) => {
         res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
         return;
       }
-      db.users = db.users.filter((item) => item.id !== +req.params.id);
-      res.sendStatus(HTTPS_STATUSES.NO_CONTENT_204);
+      const result = userRepository.deleteUser(+req.params.id);
+      if (result) {
+        res.sendStatus(HTTPS_STATUSES.NO_CONTENT_204);
+      } else {
+        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
+      }
     }
   );
 
