@@ -31,7 +31,21 @@ class UserRepository {
     return false;
   }
 
-  changeUser() {}
+  changeUser(data: { id: number; name?: string; age?: number }) {
+    const foundUser = db.users.find((item) => item.id === data.id);
+
+    if (!foundUser) {
+      return false;
+    } else {
+      if (data.name) {
+        foundUser.name = data.name;
+      }
+      if (data.age) {
+        foundUser.age = data.age;
+      }
+      return foundUser;
+    }
+  }
 }
 
-export default UserRepository;
+export default new UserRepository();

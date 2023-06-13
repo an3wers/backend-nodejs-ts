@@ -8,8 +8,7 @@ export const app = express();
 const jsonBody = express.json();
 app.use(jsonBody);
 
-const usersRoutes = getUsersRoutes(db);
-
+const usersRoutes = getUsersRoutes();
 const testsRoutes = getTestsRoutes(db);
 
 app.use("/users", usersRoutes);

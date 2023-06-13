@@ -12,17 +12,15 @@ import { UserQueryModel } from "../models/GetUsersQueryModel";
 import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
 import { getUserForView } from "../helpers/getUserForView";
-import { DBType } from "../db/db";
-import UserRepository from "../repositories/user.repository";
+import userRepository from "../repositories/user.repository";
 
 /*
   Слой представления (Representation)
 */
 
 // TODO Убрать db из передаваемого параметра
-export const getUsersRoutes = (db: DBType) => {
+export const getUsersRoutes = () => {
   const router = express.Router();
-  const userRepository = new UserRepository();
 
   router.get(
     "/",
@@ -92,21 +90,23 @@ export const getUsersRoutes = (db: DBType) => {
       req: RequestWithParamsAndBody<{ id: string }, UserUpdateModel>,
       res: Response<UserViewModel>
     ) => {
-      const foundUser = db.users.find((item) => item.id === +req.params.id);
-      if (!foundUser) {
-        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
-        return;
-      }
       if (!req.body.name || !req.body.age) {
         res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
         return;
       }
-      if (req.body.name) {
-        foundUser.name = req.body.name;
+
+      const data = {
+        id: +req.params.id,
+        name: req.body.name,
+        age: req.body.age,
+      };
+      const foundUser = userRepository.changeUser(data);
+
+      if (!foundUser) {
+        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
+        return;
       }
-      if (req.body.age) {
-        foundUser.age = req.body.age;
-      }
+
       res.json(getUserForView(foundUser));
     }
   );
