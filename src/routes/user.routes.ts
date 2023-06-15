@@ -18,7 +18,6 @@ import userRepository from "../repositories/user.repository";
   Слой представления (Representation)
 */
 
-// TODO Убрать db из передаваемого параметра
 export const getUsersRoutes = () => {
   const router = express.Router();
 
