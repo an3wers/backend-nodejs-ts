@@ -13,6 +13,11 @@ import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
 import { getUserForView } from "../helpers/getUserForView";
 import userRepository from "../repositories/user.repository";
+import { inputValidationMiddleware } from "../middleware/inputValidation.middleware";
+import {
+  ageValidator,
+  nameValidator,
+} from "../utils/validators/inputValidators";
 
 /*
   Слой представления (Representation)
@@ -51,18 +56,16 @@ export const getUsersRoutes = () => {
   // Create user
   router.post(
     "/",
+    nameValidator,
+    ageValidator,
+    inputValidationMiddleware,
     (req: RequestWithBody<UserCreateModel>, res: Response<UserViewModel>) => {
-      if (!req.body.name) {
-        res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
-        return;
-      }
-
-      const newUser = userRepository.createUser({
+      const user = userRepository.createUser({
         name: req.body.name,
         age: req.body.age,
       });
 
-      res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(newUser));
+      res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(user));
     }
   );
 

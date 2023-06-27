@@ -4,11 +4,12 @@ import { getTestsRoutes } from "./routes/tests.routes";
 import { getOrdersRoutes } from "./routes/order.routes";
 import { db } from "./db/db";
 import "dotenv/config";
-
+// import bodyParser from 'body-parser'
 export const app = express();
 
 const jsonBody = express.json();
 app.use(jsonBody);
+// app.use(bodyParser())
 
 // Using database
 // const client = new Client(getDbConfig() as ClientConfig);
