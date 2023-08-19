@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { HTTPS_STATUSES } from "../helpers/httpStatuses";
-
 import { UserViewModel } from "../models/UserViewModel";
 import {
   RequestWithBody,
@@ -10,12 +9,9 @@ import {
 } from "../types";
 
 import { UserQueryModel } from "../models/GetUsersQueryModel";
-
 import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
-
 import { getUserForView } from "../helpers/getUserForView";
-
 import { DBType } from "../db/db";
 
 export const getUsersRoutes = (db: DBType) => {
