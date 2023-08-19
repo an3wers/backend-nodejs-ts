@@ -5,5 +5,6 @@ export const getUserForView = (user: UserType): UserViewModel => {
   return {
     id: user.id,
     name: user.name,
+    age: user.age
   };
 };

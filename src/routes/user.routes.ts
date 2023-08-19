@@ -12,9 +12,18 @@ import { UserQueryModel } from "../models/GetUsersQueryModel";
 import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
 import { getUserForView } from "../helpers/getUserForView";
-import { DBType } from "../db/db";
+import userRepository from "../repositories/user.repository";
+import { inputValidationMiddleware } from "../middleware/inputValidation.middleware";
+import {
+  ageValidator,
+  nameValidator,
+} from "../utils/validators/inputValidators";
 
-export const getUsersRoutes = (db: DBType) => {
+/*
+  Слой представления (Representation)
+*/
+
+export const getUsersRoutes = () => {
   const router = express.Router();
 
   router.get(
@@ -23,53 +32,43 @@ export const getUsersRoutes = (db: DBType) => {
       req: RequestWithQuery<UserQueryModel>,
       res: Response<UserViewModel[]>
     ) {
-      let users = db.users;
-      if (req.query.name) {
-        users = db.users.filter(
-          (item) => item.name.indexOf(req.query.name) > -1
-        );
-      }
-      res.json(
-        users.map((user) => {
-          return getUserForView(user);
-        })
-      );
+      const view = userRepository.findUsers(req.query?.name).map((user) => {
+        return getUserForView(user);
+      });
+      res.json(view);
     }
   );
 
-  // Get user by id
   router.get(
     "/:id",
     (req: Request<{ id: string }>, res: Response<UserViewModel>) => {
-      const foundUser = db.users.find((item) => item.id === +req.params.id);
+      const foundUser = userRepository.getUser(+req.params.id);
 
       if (!foundUser) {
         res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
         return;
       }
-      res.json(getUserForView(foundUser));
+      const view = getUserForView(foundUser);
+      res.json(view);
     }
   );
 
   // Create user
   router.post(
     "/",
+    nameValidator,
+    ageValidator,
+    inputValidationMiddleware,
     (req: RequestWithBody<UserCreateModel>, res: Response<UserViewModel>) => {
-      if (!req.body.name) {
-        res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
-        return;
-      }
-      const newUser = {
-        id: +new Date(),
+      const user = userRepository.createUser({
         name: req.body.name,
         age: req.body.age,
-      };
-      db.users.push(newUser);
-      res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(newUser));
+      });
+
+      res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(user));
     }
   );
 
-  // Delete user by id
   router.delete(
     "/:id",
     (req: RequestWithParams<{ id: string }>, res: Response) => {
@@ -77,8 +76,12 @@ export const getUsersRoutes = (db: DBType) => {
         res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
         return;
       }
-      db.users = db.users.filter((item) => item.id !== +req.params.id);
-      res.sendStatus(HTTPS_STATUSES.NO_CONTENT_204);
+      const result = userRepository.deleteUser(+req.params.id);
+      if (result) {
+        res.sendStatus(HTTPS_STATUSES.NO_CONTENT_204);
+      } else {
+        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
+      }
     }
   );
 
@@ -89,21 +92,23 @@ export const getUsersRoutes = (db: DBType) => {
       req: RequestWithParamsAndBody<{ id: string }, UserUpdateModel>,
       res: Response<UserViewModel>
     ) => {
-      const foundUser = db.users.find((item) => item.id === +req.params.id);
-      if (!foundUser) {
-        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
-        return;
-      }
       if (!req.body.name || !req.body.age) {
         res.sendStatus(HTTPS_STATUSES.BAD_REQUEST_400);
         return;
       }
-      if (req.body.name) {
-        foundUser.name = req.body.name;
+
+      const data = {
+        id: +req.params.id,
+        name: req.body.name,
+        age: req.body.age,
+      };
+      const foundUser = userRepository.changeUser(data);
+
+      if (!foundUser) {
+        res.sendStatus(HTTPS_STATUSES.NOT_FOUND_404);
+        return;
       }
-      if (req.body.age) {
-        foundUser.age = req.body.age;
-      }
+
       res.json(getUserForView(foundUser));
     }
   );
