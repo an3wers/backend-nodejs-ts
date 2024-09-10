@@ -1,0 +1,6 @@
+{
+  "whatch": ["src"],
+  "ext": "ts",
+  "ignore": ["src/**/*spec.ts", "src/**/*back.ts"],
+  "exec": "ts-node --files ./src/index.ts"
+}
