@@ -1,11 +1,17 @@
-import { Collection } from "mongodb";
+import { Collection, SortDirection } from "mongodb";
 import { db } from "../db/mongodb";
-import { TODO } from "../services/todos.types";
+import { GetTodosPayload, TODO } from "../services/todos.types";
+
+interface GetTodosRequest {
+  page: number;
+  limit: number;
+  sortParam: Record<string, SortDirection>;
+}
 
 class TodosRepository {
   collection = db.collection("todos");
 
-  async getTodos({ page, limit }: { page: number; limit: number }) {
+  async getTodos({ page, limit, sortParam }: GetTodosRequest) {
     try {
       const skip = (page - 1) * limit;
 
@@ -13,6 +19,7 @@ class TodosRepository {
         .find({})
         .skip(skip)
         .limit(limit)
+        .sort(sortParam)
         .toArray()) as unknown as TODO[];
 
       const totalCount = await this.collection.countDocuments();

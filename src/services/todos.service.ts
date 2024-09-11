@@ -1,6 +1,7 @@
 import { todosRepository } from "../repositories/todo.repository";
 import { v4 as uuid } from "uuid";
-import { TODO } from "./todos.types";
+import { GetTodosPayload, TODO } from "./todos.types";
+import { getSortTodos } from "../helpers/getSortTodos";
 
 interface GetTodosResponse {
   todos: TODO[];
@@ -13,11 +14,12 @@ class TodosService {
   async getTodos({
     page,
     limit,
-  }: {
-    page: number;
-    limit: number;
-  }): Promise<GetTodosResponse> {
-    const res = await todosRepository.getTodos({ page, limit });
+    orderBy,
+    sortBy,
+  }: GetTodosPayload): Promise<GetTodosResponse> {
+    const sortParam = getSortTodos(sortBy, orderBy);
+
+    const res = await todosRepository.getTodos({ page, limit, sortParam });
     return res;
   }
 

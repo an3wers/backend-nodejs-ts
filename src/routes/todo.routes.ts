@@ -15,12 +15,16 @@ export const getTodosRoutes = () => {
 
   router.get("/", async (req, res) => {
     try {
-      const page = Number(req.query.page?.toString() as string) || 1;
-      const limit = Number(req.query.limit?.toString() as string) || 10;
+      const page = Number(req.query.page?.toString()) || 1;
+      const limit = Number(req.query.limit?.toString()) || 10;
+      const sortBy = (req.query.sortBy as string) || "date";
+      const orderBy = (req.query.orderBy as string) || "asc";
 
       const data = await todosService.getTodos({
         page,
         limit,
+        sortBy,
+        orderBy,
       });
       res.status(OK_200).json({ data });
     } catch (error) {
