@@ -1,4 +1,7 @@
 export type UserCreateModel = {
-  name: string;
-  age: number
+  login: string;
+  email: string;
+  password: string;
+  // name: string;
+  // age: number
 };

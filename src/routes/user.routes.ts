@@ -18,6 +18,7 @@ import {
   ageValidator,
   nameValidator,
 } from "../utils/validators/inputValidators";
+import { usersService } from "../services/users.service";
 
 /*
   Слой представления (Representation)
@@ -53,19 +54,45 @@ export const getUsersRoutes = () => {
     }
   );
 
-  // Create user
+  // TODO: Поправить валидацию
   router.post(
-    "/",
-    nameValidator,
-    ageValidator,
+    "/create",
+    // nameValidator,
+    // ageValidator,
     inputValidationMiddleware,
-    (req: RequestWithBody<UserCreateModel>, res: Response<UserViewModel>) => {
-      const user = userRepository.createUser({
-        name: req.body.name,
-        age: req.body.age,
+    async (
+      req: RequestWithBody<UserCreateModel>,
+      res: Response<UserViewModel>
+    ) => {
+      await usersService.createUser({
+        email: req.body.email,
+        login: req.body.login,
+        password: req.body.password,
       });
 
-      res.status(HTTPS_STATUSES.CREATED_201).json(getUserForView(user));
+      res.status(HTTPS_STATUSES.CREATED_201).json();
+    }
+  );
+
+  router.post(
+    "/login",
+    inputValidationMiddleware,
+    async (req: Request, res: Response) => {
+      // TODO: Добавить реализацию
+
+      const user = await usersService.checkCredentials({
+        login: req.body.login,
+        password: req.body.password,
+      });
+
+      if (user === null) {
+        res.status(HTTPS_STATUSES.UNATHORIZED_401);
+        return;
+      }
+
+      const userToken = await usersService.loginUser(user);
+
+      res.status(HTTPS_STATUSES.OK_200).json(userToken);
     }
   );
 

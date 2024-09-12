@@ -1,4 +1,6 @@
+import { ObjectId } from "mongodb";
 import { db } from "../db/db";
+import { UserDbType } from "./types";
 
 /*
   Слой работы с данными (Repository)
@@ -16,10 +18,9 @@ class UserRepository {
     const foundUser = db.users.find((item) => item.id === id);
     return foundUser;
   }
-  createUser(data: { name: string; age: number }) {
-    const user = { id: +new Date(), ...data };
-    db.users.push(user);
-    return user;
+  async createUser(data: UserDbType): Promise<UserDbType> {
+    // TODO: Добавить реализацию создания юзера в БД
+    return data;
   }
 
   deleteUser(id: number) {
@@ -45,6 +46,30 @@ class UserRepository {
       }
       return foundUser;
     }
+  }
+
+  async findUserByLogin(login: string) {
+    // TODO: Добавить реализацию поиска юзера по логину
+    return {
+      _id: 1,
+    };
+  }
+
+  async findUserByEmail(email: string) {
+    // TODO: Добавить реализацию поиска юзера по логину
+    return {
+      _id: 1,
+    };
+  }
+
+  async updateConfirmation(userId: ObjectId) {
+    // TODO: Добавить реализацию
+    return true;
+  }
+
+  async getUserById(id: ObjectId): Promise<UserDbType> {
+    // БД логика
+    return {} as UserDbType;
   }
 }
 
