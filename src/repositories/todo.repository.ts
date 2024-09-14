@@ -1,5 +1,5 @@
 import { Collection, SortDirection } from "mongodb";
-import { db } from "../db/mongodb";
+// import { db } from "../db/mongodb";
 import { GetTodosPayload, TODO } from "../services/todos.types";
 
 interface GetTodosRequest {
@@ -9,7 +9,7 @@ interface GetTodosRequest {
 }
 
 class TodosRepository {
-  collection = db.collection("todos");
+  // collection = db.collection("todos");
 
   async getTodos({ page, limit, sortParam }: GetTodosRequest) {
     try {

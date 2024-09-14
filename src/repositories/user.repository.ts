@@ -1,76 +1,76 @@
 import { ObjectId } from "mongodb";
-import { db } from "../db/db";
+// import { db } from "../db/db";
 import { UserDbType } from "./types";
-
-/*
-  Слой работы с данными (Repository)
-*/
+import { UserModel } from "../db/userSchema";
 
 class UserRepository {
-  findUsers(name: string | undefined) {
-    let users = db.users;
-    if (name) {
-      return users.filter((item) => item.name.indexOf(name) > -1);
+  async createUser(data: UserDbType) {
+    const res = await UserModel.create(data);
+    return res;
+  }
+
+  async deleteUser(userId: ObjectId) {
+    const res = await UserModel.deleteOne({ _id: userId });
+    return res;
+  }
+
+  async changeUser(data: {
+    userId: ObjectId;
+    email?: string;
+    password?: string;
+  }) {
+    if (!data.email && !data.password) return null;
+    const changeUser: Record<string, any> = {};
+
+    if (data.email) {
+      changeUser["accountInfo.email"] = data.email;
     }
-    return users;
-  }
-  getUser(id: number) {
-    const foundUser = db.users.find((item) => item.id === id);
-    return foundUser;
-  }
-  async createUser(data: UserDbType): Promise<UserDbType> {
-    // TODO: Добавить реализацию создания юзера в БД
-    return data;
-  }
 
-  deleteUser(id: number) {
-    const foundUser = db.users.find((item) => item.id === id);
-    if (foundUser) {
-      db.users.filter((item) => item.id !== id);
-      return true;
+    if (data.password) {
+      changeUser["accountInfo.passwordHash"] = data.password;
     }
-    return false;
-  }
 
-  changeUser(data: { id: number; name?: string; age?: number }) {
-    const foundUser = db.users.find((item) => item.id === data.id);
-
-    if (!foundUser) {
-      return false;
-    } else {
-      if (data.name) {
-        foundUser.name = data.name;
+    const res = await UserModel.updateOne(
+      { _id: data.userId },
+      {
+        $set: changeUser,
       }
-      if (data.age) {
-        foundUser.age = data.age;
-      }
-      return foundUser;
-    }
+    );
+
+    return res;
   }
 
   async findUserByLogin(login: string) {
-    // TODO: Добавить реализацию поиска юзера по логину
-    return {
-      _id: 1,
-    };
+    const user = await UserModel.findOne({ accountInfo: { login } });
+    return user;
   }
 
   async findUserByEmail(email: string) {
-    // TODO: Добавить реализацию поиска юзера по логину
-    return {
-      _id: 1,
-    };
+    const user = await UserModel.findOne({ accountInfo: { email } });
+    return user;
   }
 
   async updateConfirmation(userId: ObjectId) {
-    // TODO: Добавить реализацию
-    return true;
+    const res = await UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "emailConfirmation.isConfirmed": true,
+        },
+      }
+    );
+    return res.matchedCount === 1;
   }
 
-  async getUserById(id: ObjectId): Promise<UserDbType> {
-    // БД логика
-    return {} as UserDbType;
+  async findUserById(userId: ObjectId) {
+    const res = await UserModel.findOne({ _id: userId });
+    return res;
+  }
+
+  async findAllUsers() {
+    const res = await UserModel.find();
+    return res;
   }
 }
 
-export default new UserRepository();
+export const userRepository = new UserRepository();

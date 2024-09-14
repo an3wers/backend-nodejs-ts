@@ -2,7 +2,7 @@ import { UserCreateModel } from "../models/UserCreateModel";
 import { UserDbType } from "../repositories/types";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcrypt";
-import userRepository from "../repositories/user.repository";
+import { userRepository } from "../repositories/user.repository";
 import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
 import { add } from "date-fns";
@@ -27,6 +27,15 @@ class UsersService {
       passwordSalt
     );
 
+    /*
+      Валидация данных пользователя:
+        ip: string = "",
+        userAgent: string = "",
+        deviceId: string = ""
+
+        Для защиты регистрации от эксплойта
+    */
+
     const newUser: UserDbType = {
       _id: new ObjectId(),
       accountInfo: {
@@ -41,11 +50,14 @@ class UsersService {
         expirationDate: add(new Date(), { hours: 1, minutes: 5 }),
         isConfirmed: false,
       },
+      registrationData: {
+        ip: ip,
+        userAgent: userAgent,
+        deviceId: deviceId,
+      },
     };
 
     const createdUser = userRepository.createUser(newUser);
-
-    // TODO: Логика вызова email сервиса для отправки письма пользователю
 
     try {
       await emailService.sendEmailConfirmation(
@@ -54,8 +66,7 @@ class UsersService {
       );
     } catch (error) {
       console.error("[sendEmailConfirmation]: ", error);
-      // TODO: Логика удаления пользователя или иная бизнес логика
-
+      await userRepository.deleteUser(newUser._id);
       return null;
     }
 
@@ -90,13 +101,13 @@ class UsersService {
   }
 
   async getUserInfo(token: string) {
-    const userId = this.verifyJWT(token);
+    const userId = this.getUserIdByToken(token);
 
     if (!userId) {
       return null;
     }
 
-    const user = await userRepository.getUserById(userId);
+    const user = await userRepository.findUserById(userId);
 
     if (!user) {
       return null;
@@ -129,7 +140,8 @@ class UsersService {
   }
 
   async getUserById(id: ObjectId) {
-    return await userRepository.getUserById(id);
+    const res = await userRepository.findUserById(id);
+    return res;
   }
 
   private generateHash(password: string, salt: string) {
