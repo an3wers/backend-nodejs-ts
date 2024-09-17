@@ -12,7 +12,7 @@ import { UserQueryModel } from "../models/GetUsersQueryModel";
 import { UserCreateModel } from "../models/UserCreateModel";
 import { UserUpdateModel } from "../models/UserUpdateModel";
 import { getUserForView } from "../helpers/getUserForView";
-import userRepository from "../repositories/user.repository";
+import { userRepository } from "../repositories/user.repository";
 import { inputValidationMiddleware } from "../middleware/inputValidation.middleware";
 import {
   ageValidator,
