@@ -1,7 +1,7 @@
 import express from "express";
-import { getUsersRoutes } from "./routes/user.routes";
+// import { getUsersRoutes } from "./routes/user.routes";
 // import { getTestsRoutes } from "./routes/tests.routes";
-import { getOrdersRoutes } from "./routes/order.routes";
+// import { getOrdersRoutes } from "./routes/order.routes";
 // import { db } from "./db/db";
 
 import { getTodosRoutes } from "./routes/todo.routes";
@@ -38,12 +38,12 @@ app.use(jsonBody);
 //     console.log("error", err);
 //   });
 
-const usersRoutes = getUsersRoutes();
-const ordersRoutes = getOrdersRoutes();
-const todosRoutes = getTodosRoutes();
+// const usersRoutes = getUsersRoutes();
+// const ordersRoutes = getOrdersRoutes();
+// const todosRoutes = getTodosRoutes();
 // const testsRoutes = getTestsRoutes(db);
 
-app.use("/users", usersRoutes);
-app.use("/orders", ordersRoutes);
-app.use("/todos", todosRoutes);
+// app.use("/users", usersRoutes);
+// app.use("/orders", ordersRoutes);
+// app.use("/todos", todosRoutes);
 // app.use("/__test__", testsRoutes);
